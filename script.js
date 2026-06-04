@@ -28,7 +28,7 @@ navLinks.forEach(link => {
     });
 });
 
-// Form Submission - Validate and send to Google Apps Script via iframe (CORS-safe)
+// Form Submission - Direct POST to Google Apps Script
 const contactForm = document.querySelector('.contact-form');
 if (contactForm) {
     contactForm.addEventListener('submit', (e) => {
@@ -53,7 +53,7 @@ if (contactForm) {
             return;
         }
         
-        // Validate phone (basic check for minimum 10 digits)
+        // Validate phone
         const phoneRegex = /^\+?[0-9\s\-\(\)]{10,}$/;
         if (!phoneRegex.test(phone)) {
             alert('Please enter a valid phone number (minimum 10 digits).');
@@ -66,33 +66,21 @@ if (contactForm) {
         submitBtn.textContent = 'Sending...';
         submitBtn.disabled = true;
         
-        // Create hidden iframe for form submission
-        const iframe = document.createElement('iframe');
-        iframe.name = 'hidden-form';
-        iframe.style.display = 'none';
-        document.body.appendChild(iframe);
+        // Prepare URL-encoded form data
+        const params = new URLSearchParams();
+        params.append('name', name);
+        params.append('email', email);
+        params.append('phone', phone);
+        params.append('company', company);
+        params.append('message', message);
         
-        // Create hidden form
-        const hiddenForm = document.createElement('form');
-        hiddenForm.method = 'POST';
-        hiddenForm.action = 'https://script.google.com/macros/s/AKfycbzfXcqhn2Qjq-K-Vs3dOq8H1APBzE_t4BhbaXIIKp3cusuo6WLkV-2TM6szOh4X5hAG/exec';
-        hiddenForm.target = 'hidden-form';
-        
-        // Add fields to hidden form
-        const fields = {name, email, phone, company, message};
-        Object.keys(fields).forEach(key => {
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = key;
-            input.value = fields[key];
-            hiddenForm.appendChild(input);
-        });
-        
-        document.body.appendChild(hiddenForm);
-        hiddenForm.submit();
-        
-        // Show success notification after short delay
-        setTimeout(() => {
+        // Send to Google Apps Script
+        fetch('https://script.google.com/macros/s/AKfycbzfXcqhn2Qjq-K-Vs3dOq8H1APBzE_t4BhbaXIIKp3cusuo6WLkV-2TM6szOh4X5hAG/exec', {
+            method: 'POST',
+            mode: 'no-cors',
+            body: params
+        })
+        .then(() => {
             // Show success notification
             const notification = document.createElement('div');
             notification.style.cssText = `
@@ -118,16 +106,18 @@ if (contactForm) {
             submitBtn.textContent = originalText;
             submitBtn.disabled = false;
             
-            // Clean up hidden elements
-            hiddenForm.remove();
-            iframe.remove();
-            
             // Remove notification after 5 seconds
             setTimeout(() => {
                 notification.style.animation = 'slideOut 0.5s ease';
                 setTimeout(() => notification.remove(), 500);
             }, 5000);
-        }, 500);
+        })
+        .catch(error => {
+            console.error('Form error:', error);
+            submitBtn.textContent = originalText;
+            submitBtn.disabled = false;
+            alert('Error submitting form. Please try again.');
+        });
     });
 }
 
