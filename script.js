@@ -75,7 +75,7 @@ if (contactForm) {
         // Create hidden form
         const hiddenForm = document.createElement('form');
         hiddenForm.method = 'POST';
-        hiddenForm.action = 'https://script.google.com/macros/s/AKfycbxaUBH1PNXMfdTHEdfezEMq-E4SKs-U51P-MdRc0s9JTwO61pZDOh4BBFqRCgE9Q2Nf/exec';
+        hiddenForm.action = 'https://script.google.com/macros/s/AKfycbzfXcqhn2Qjq-K-Vs3dOq8H1APBzE_t4BhbaXIIKp3cusuo6WLkV-2TM6szOh4X5hAG/exec';
         hiddenForm.target = 'hidden-form';
         
         // Add fields to hidden form
