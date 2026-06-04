@@ -28,20 +28,18 @@ navLinks.forEach(link => {
     });
 });
 
-// Form Submission
+// Form Submission - Validate before sending to Google Apps Script
 const contactForm = document.querySelector('.contact-form');
 if (contactForm) {
     contactForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        
         const name = document.getElementById('name').value.trim();
         const email = document.getElementById('email').value.trim();
         const phone = document.getElementById('phone').value.trim();
-        const company = document.getElementById('company').value.trim();
         const message = document.getElementById('message').value.trim();
         
         // Validate form
         if (!name || !email || !phone || !message) {
+            e.preventDefault();
             alert('Please fill in all required fields (marked with *).');
             return;
         }
@@ -49,6 +47,7 @@ if (contactForm) {
         // Validate email
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
+            e.preventDefault();
             alert('Please enter a valid email address.');
             return;
         }
@@ -56,24 +55,19 @@ if (contactForm) {
         // Validate phone (basic check for minimum 10 digits)
         const phoneRegex = /^\+?[0-9\s\-\(\)]{10,}$/;
         if (!phoneRegex.test(phone)) {
+            e.preventDefault();
             alert('Please enter a valid phone number (minimum 10 digits).');
             return;
         }
         
-        // Simulate form submission
+        // Show sending status
         const submitBtn = contactForm.querySelector('.submit-btn');
         const originalText = submitBtn.textContent;
         submitBtn.textContent = 'Sending...';
         submitBtn.disabled = true;
         
+        // Form will submit to Google Apps Script after 1 second
         setTimeout(() => {
-            // Reset form
-            contactForm.reset();
-            
-            // Show success message
-            alert('Thank you for your inquiry!\n\nWe will contact you within 24 hours.\n\nName: ' + name + '\nEmail: ' + email);
-            
-            // Restore button
             submitBtn.textContent = originalText;
             submitBtn.disabled = false;
         }, 1500);
