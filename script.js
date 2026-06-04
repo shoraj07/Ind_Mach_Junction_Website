@@ -39,64 +39,67 @@ if (contactForm) {
     contactForm.addEventListener('submit', (e) => {
         console.log('Form submit event triggered!');
         e.preventDefault();
-        
+
         const name = document.getElementById('name').value.trim();
         const email = document.getElementById('email').value.trim();
         const phone = document.getElementById('phone').value.trim();
         const company = document.getElementById('company').value.trim();
         const message = document.getElementById('message').value.trim();
-        
+
         console.log('Form data collected:', {name, email, phone, company, message});
-        
+
         // Validate form
         if (!name || !email || !phone || !message) {
             alert('Please fill in all required fields (marked with *).');
             return;
         }
-        
+
         // Validate email
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
             alert('Please enter a valid email address.');
             return;
         }
-        
+
         // Validate phone
-        const phoneRegex = /^\+?[0-9\s\-\(\)]{10,}$/;
-        if (!phoneRegex.test(phone)) {
-            alert('Please enter a valid phone number (minimum 10 digits).');
+        const cleanedPhone = phone.replace(/\D/g, ''); // remove non-digits
+        const phoneRegex = /^\d{10}$/; // exactly 10 digits
+        if (!phoneRegex.test(cleanedPhone)) {
+            alert('Please enter a valid 10-digit phone number.');
             return;
         }
-        
+
+
         console.log('Validation passed, preparing to submit...');
-        
+
         // Show sending status
         const submitBtn = contactForm.querySelector('.submit-btn');
         const originalText = submitBtn.textContent;
         submitBtn.textContent = 'Sending...';
         submitBtn.disabled = true;
-        
+
         // Create or get hidden iframe
         let iframe = document.getElementById('formFrame');
         if (!iframe) {
             iframe = document.createElement('iframe');
             iframe.id = 'formFrame';
+            iframe.name = 'formFrame';
             iframe.style.display = 'none';
             document.body.appendChild(iframe);
             console.log('Created hidden iframe');
         }
-        
+
         // Create hidden form
         let hiddenForm = document.getElementById('hiddenForm');
         if (hiddenForm) hiddenForm.remove();
-        
+
         hiddenForm = document.createElement('form');
         hiddenForm.id = 'hiddenForm';
         hiddenForm.method = 'POST';
         hiddenForm.action = 'https://script.google.com/macros/s/AKfycbzfXcqhn2Qjq-K-Vs3dOq8H1APBzE_t4BhbaXIIKp3cusuo6WLkV-2TM6szOh4X5hAG/exec';
         hiddenForm.target = 'formFrame';
         hiddenForm.style.display = 'none';
-        
+
         // Add form fields
         const fields = {name, email, phone, company, message};
         Object.keys(fields).forEach(key => {
@@ -106,12 +109,12 @@ if (contactForm) {
             input.value = fields[key];
             hiddenForm.appendChild(input);
         });
-        
+
         document.body.appendChild(hiddenForm);
-        
+
         console.log('Submitting form with data:', fields);
         hiddenForm.submit();
-        
+
         // Show success notification after 800ms
         setTimeout(() => {
             const notification = document.createElement('div');
@@ -130,16 +133,16 @@ if (contactForm) {
             `;
             notification.textContent = '✅ Thank you! Your inquiry has been received.';
             document.body.appendChild(notification);
-            
+
             // Reset form
             contactForm.reset();
-            
+
             // Restore button
             submitBtn.textContent = originalText;
             submitBtn.disabled = false;
-            
+
             console.log('Form submitted and notification shown');
-            
+
             // Remove notification after 5 seconds
             setTimeout(() => {
                 notification.style.animation = 'slideOut 0.5s ease';
@@ -151,7 +154,7 @@ if (contactForm) {
     console.error('Contact form not found!');
 }
 
-// Add CSS animations for notification
+// Create a single style element for animations + active link styling
 const style = document.createElement('style');
 style.textContent = `
     @keyframes slideIn {
@@ -161,6 +164,9 @@ style.textContent = `
     @keyframes slideOut {
         from { transform: translateX(0); opacity: 1; }
         to { transform: translateX(400px); opacity: 0; }
+    }
+    .nav-link.active {
+        color: var(--primary-color);
     }
 `;
 document.head.appendChild(style);
@@ -192,7 +198,7 @@ document.querySelectorAll('.product-card, .industry-card, .benefit-card, .testim
 // Sticky navigation highlighting
 window.addEventListener('scroll', () => {
     let current = '';
-    
+
     const sections = document.querySelectorAll('section[id]');
     sections.forEach(section => {
         const sectionTop = section.offsetTop;
@@ -200,7 +206,7 @@ window.addEventListener('scroll', () => {
             current = section.getAttribute('id');
         }
     });
-    
+
     navLinks.forEach(link => {
         link.classList.remove('active');
         if (link.getAttribute('href') === '#' + current) {
@@ -226,15 +232,6 @@ document.querySelectorAll('.product-btn').forEach(btn => {
         document.getElementById('contact').scrollIntoView({ behavior: 'smooth' });
     });
 });
-
-// Add active link styling
-const style = document.createElement('style');
-style.textContent = `
-    .nav-link.active {
-        color: var(--primary-color);
-    }
-`;
-document.head.appendChild(style);
 
 // Phone number formatting
 const phoneInput = document.getElementById('phone');
