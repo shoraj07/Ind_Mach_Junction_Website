@@ -28,18 +28,20 @@ navLinks.forEach(link => {
     });
 });
 
-// Form Submission - Validate before sending to Google Apps Script
+// Form Submission - Validate and send to Google Apps Script without redirect
 const contactForm = document.querySelector('.contact-form');
 if (contactForm) {
     contactForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        
         const name = document.getElementById('name').value.trim();
         const email = document.getElementById('email').value.trim();
         const phone = document.getElementById('phone').value.trim();
+        const company = document.getElementById('company').value.trim();
         const message = document.getElementById('message').value.trim();
         
         // Validate form
         if (!name || !email || !phone || !message) {
-            e.preventDefault();
             alert('Please fill in all required fields (marked with *).');
             return;
         }
@@ -47,7 +49,6 @@ if (contactForm) {
         // Validate email
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
-            e.preventDefault();
             alert('Please enter a valid email address.');
             return;
         }
@@ -55,7 +56,6 @@ if (contactForm) {
         // Validate phone (basic check for minimum 10 digits)
         const phoneRegex = /^\+?[0-9\s\-\(\)]{10,}$/;
         if (!phoneRegex.test(phone)) {
-            e.preventDefault();
             alert('Please enter a valid phone number (minimum 10 digits).');
             return;
         }
@@ -66,13 +66,73 @@ if (contactForm) {
         submitBtn.textContent = 'Sending...';
         submitBtn.disabled = true;
         
-        // Form will submit to Google Apps Script after 1 second
-        setTimeout(() => {
+        // Prepare form data
+        const formData = new FormData();
+        formData.append('name', name);
+        formData.append('email', email);
+        formData.append('phone', phone);
+        formData.append('company', company);
+        formData.append('message', message);
+        
+        // Send to Google Apps Script
+        fetch('https://script.google.com/macros/s/AKfycbxaUBH1PNXMfdTHEdfezEMq-E4SKs-U51P-MdRc0s9JTwO61pZDOh4BBFqRCgE9Q2Nf/exec', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.text())
+        .then(result => {
+            // Show success notification
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #28a745;
+                color: white;
+                padding: 15px 20px;
+                border-radius: 5px;
+                z-index: 9999;
+                font-weight: bold;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                animation: slideIn 0.5s ease;
+            `;
+            notification.textContent = '✅ Thank you! Your inquiry has been received.';
+            document.body.appendChild(notification);
+            
+            // Reset form
+            contactForm.reset();
+            
+            // Restore button
             submitBtn.textContent = originalText;
             submitBtn.disabled = false;
-        }, 1500);
+            
+            // Remove notification after 5 seconds
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.5s ease';
+                setTimeout(() => notification.remove(), 500);
+            }, 5000);
+        })
+        .catch(error => {
+            alert('Error submitting form: ' + error);
+            submitBtn.textContent = originalText;
+            submitBtn.disabled = false;
+        });
     });
 }
+
+// Add CSS animations for notification
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from { transform: translateX(400px); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideOut {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(400px); opacity: 0; }
+    }
+`;
+document.head.appendChild(style);
 
 // Add scroll animation for elements
 const observerOptions = {
