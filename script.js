@@ -29,9 +29,15 @@ navLinks.forEach(link => {
 });
 
 // Form Submission - Use iframe to submit without page redirect
+console.log('Script loaded - looking for contact form...');
+
 const contactForm = document.querySelector('.contact-form');
+console.log('Contact form found:', contactForm);
+
 if (contactForm) {
+    console.log('Setting up form submit listener...');
     contactForm.addEventListener('submit', (e) => {
+        console.log('Form submit event triggered!');
         e.preventDefault();
         
         const name = document.getElementById('name').value.trim();
@@ -39,6 +45,8 @@ if (contactForm) {
         const phone = document.getElementById('phone').value.trim();
         const company = document.getElementById('company').value.trim();
         const message = document.getElementById('message').value.trim();
+        
+        console.log('Form data collected:', {name, email, phone, company, message});
         
         // Validate form
         if (!name || !email || !phone || !message) {
@@ -60,6 +68,8 @@ if (contactForm) {
             return;
         }
         
+        console.log('Validation passed, preparing to submit...');
+        
         // Show sending status
         const submitBtn = contactForm.querySelector('.submit-btn');
         const originalText = submitBtn.textContent;
@@ -73,6 +83,7 @@ if (contactForm) {
             iframe.id = 'formFrame';
             iframe.style.display = 'none';
             document.body.appendChild(iframe);
+            console.log('Created hidden iframe');
         }
         
         // Create hidden form
@@ -127,6 +138,8 @@ if (contactForm) {
             submitBtn.textContent = originalText;
             submitBtn.disabled = false;
             
+            console.log('Form submitted and notification shown');
+            
             // Remove notification after 5 seconds
             setTimeout(() => {
                 notification.style.animation = 'slideOut 0.5s ease';
@@ -134,6 +147,8 @@ if (contactForm) {
             }, 5000);
         }, 800);
     });
+} else {
+    console.error('Contact form not found!');
 }
 
 // Add CSS animations for notification
